@@ -65,7 +65,7 @@ class AckViewSet(viewsets.ModelViewSet):
 
 
 class AlarmSeverityViewSet(ListCreateAPIView):
-    # permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, ]
     serializer_class = serializers.AckSerializer
     pk_url_kwarg = "alarm_id"
 
@@ -95,7 +95,11 @@ class AlarmSeverityViewSet(ListCreateAPIView):
         print(people_obj)
         
         time_now = timezone.now()
-        
+
+        qs = Acknowledgement.objects.filter(alarm=alarm_obj)
+        if qs.exists():
+            raise PermissionDenied("A User Has already Acknowledged it...")
+
         serializer.save(
             acknowledger=people_obj, 
             created=time_now, 
