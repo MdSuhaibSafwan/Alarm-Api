@@ -21,21 +21,31 @@ class AlarmCurrentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         current = Alarm.objects.all() # (resolved__isnull=True) 
         prop = self.request.query_params.get("search", None)  # /api/history or /api/history/?search=MAJoasdr -> major
+        device = self.request.query_params.get("device", None)
         if prop is not None:
             prop = str(prop).upper()
             print(prop)
             if prop == "MAJOR":
                 current = current.filter(severity__lte=2)
-                return current
 
-            if prop == "MINOR":
-                return current
+            elif prop == "MINOR":
+                pass
 
-            if prop == "CRITICAL":   
+            elif prop == "CRITICAL":   
                 current = current.filter(severity=1)
-                return current
-            
-            raise PermissionDenied("search property only takes...")
+
+            else:
+                raise PermissionDenied("search property only takes...")
+
+        if device is not None:
+            try:
+                device = int(device)
+            except ValueError:
+                raise PermissionDenied("Please Provide an Integer Value...")
+
+            current = current.filter(node__id=device)
+            if not current.exists():
+                raise NotFound("Alarm with this Node donot exist...")
 
         return current
 
@@ -71,10 +81,14 @@ class AlarmSeverityViewSet(ListCreateAPIView):
 
     def get_queryset(self):
         qs = Acknowledgement.objects.all()
+        
         return qs
 
     # def get_serializer(self, *args, **kwargs):
     #     return self.serializer_class
+
+    def list(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         pk = self.pk_url_kwarg  # alarm_id

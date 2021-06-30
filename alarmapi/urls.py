@@ -32,9 +32,9 @@ from rest_framework.documentation import include_docs_urls
 
 
 router = DefaultRouter()
-router.register(r'alarm/current', views.AlarmCurrentViewSet, basename='current')
+router.register(r'alarms/current', views.AlarmCurrentViewSet, basename='current')
 router.register(r'alarm', views.AlarmViewSet, basename='alarm')
-router.register(r'alarm/history', views.AlarmHistoryViewSet, basename='history')
+router.register(r'alarms/history', views.AlarmHistoryViewSet, basename='history')
 router.register(r'node', views.NodeViewSet, basename='node')
 router.register(r'ack', views.AckViewSet, basename='ack')
 # router.register(r'alarm/<alarm_id>/ack', views.AlarmSeverityViewSet, basename="sev")
