@@ -18,10 +18,33 @@ class AlarmViewSet(viewsets.ModelViewSet):
 class AlarmCurrentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.AlarmSerializer
 
+    def change_qs(self, current_qs):
+        date = self.request.query_params.get("date", None)
+        if date is not None:
+            time_lst = date.split("-")
+            for i in time_lst:
+                try:
+                    int(i)
+                except ValueError:
+                    raise PermissionDenied("Give an Integer...")
+
+            year, month, day = time_lst[0], time_lst[1], time_lst[2]
+            qs = current_qs.filter(opened__year=year)
+            qs = qs.filter(opened__month=month)
+            qs = qs.filter(opened__day__lte=day)
+            
+            if not qs.exists():
+                raise NotFound("Qs with this Time do not exist...")
+
+            return qs
+
+        return current_qs
+
     def get_queryset(self):
         current = Alarm.objects.all() # (resolved__isnull=True) 
         prop = self.request.query_params.get("search", None)  # /api/history or /api/history/?search=MAJoasdr -> major
         device = self.request.query_params.get("device", None)
+        current = self.change_qs(current)
         if prop is not None:
             prop = str(prop).upper()
             print(prop)
